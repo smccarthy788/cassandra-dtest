@@ -572,7 +572,7 @@ class UpgradeTester(Tester):
         # queue of verified writes, which are update candidates
         verification_done_queue = Queue(maxsize=500)
 
-        writer = Process(target=data_writer, args=(self, to_verify_queue, verification_done_queue, 25))
+        writer = Process(target=data_writer, name='data_writer', args=(self, to_verify_queue, verification_done_queue, 25))
         # daemon subprocesses are killed automagically when the parent process exits
         writer.daemon = True
         self.subprocs.append(writer)
@@ -581,7 +581,7 @@ class UpgradeTester(Tester):
         if wait_for_rowcount > 0:
             self._wait_until_queue_condition('rows written (but not verified)', to_verify_queue, writer, operator.ge, wait_for_rowcount, max_wait_s=max_wait_s)
 
-        verifier = Process(target=data_checker, args=(self, to_verify_queue, verification_done_queue))
+        verifier = Process(target=data_checker, name='data_checker', args=(self, to_verify_queue, verification_done_queue))
         # daemon subprocesses are killed automagically when the parent process exits
         verifier.daemon = True
         self.subprocs.append(verifier)
@@ -601,7 +601,7 @@ class UpgradeTester(Tester):
         # queue of verified writes, which are update candidates
         verification_done_queue = Queue(maxsize=500)
 
-        incrementer = Process(target=counter_incrementer, args=(self, to_verify_queue, verification_done_queue, 25))
+        incrementer = Process(target=counter_incrementer, name='counter_incrementer', args=(self, to_verify_queue, verification_done_queue, 25))
         # daemon subprocesses are killed automagically when the parent process exits
         incrementer.daemon = True
         self.subprocs.append(incrementer)
@@ -610,7 +610,7 @@ class UpgradeTester(Tester):
         if wait_for_rowcount > 0:
             self._wait_until_queue_condition('counters incremented (but not verified)', to_verify_queue, incrementer, operator.ge, wait_for_rowcount, max_wait_s=max_wait_s)
 
-        count_verifier = Process(target=counter_checker, args=(self, to_verify_queue, verification_done_queue))
+        count_verifier = Process(target=counter_checker, name='counter_checker', args=(self, to_verify_queue, verification_done_queue))
         # daemon subprocesses are killed automagically when the parent process exits
         count_verifier.daemon = True
         self.subprocs.append(count_verifier)
