@@ -150,6 +150,10 @@ class UpgradeTester(Tester):
                       'with Cassandra version {}'.format(self.protocol_version, new_version_from_build))
         node1.set_log_level("DEBUG" if DEBUG else "INFO")
         node1.set_configuration_options(values={'internode_compression': 'none'})
+        with open(os.path.join(node1.get_conf_dir(), 'jvm.options')) as f:
+            debug(f.readlines())
+        with open(os.path.join(node1.get_conf_dir(), 'cassandra-env.sh')) as f:
+            debug(f.readlines())
         node1.start(wait_for_binary_proto=True, wait_other_notice=True)
 
         sessions_and_meta = []
