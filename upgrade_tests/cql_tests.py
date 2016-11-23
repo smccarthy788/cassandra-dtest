@@ -5171,6 +5171,9 @@ class TestCQL(UpgradeTester):
                    jira_url='https://issues.apache.org/jira/browse/CASSANDRA-12866',
                    flaky=True)
     def bug_5732_test(self):
+        if self.cluster.version() < "2.2":
+            self.ignore_log_patterns = ["LEAK DETECTED: a reference .* to class .* was not released before the reference was garbage collected"]
+
         cursor = self.prepare(use_cache=True)
 
         cursor.execute("""
