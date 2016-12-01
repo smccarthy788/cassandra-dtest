@@ -113,7 +113,7 @@ class UpgradeTester(Tester):
 
         return session
 
-    def do_upgrade(self, session, return_nodes=False):
+    def do_upgrade(self, session, return_nodes=False, ignored_log_patterns=None):
         """
         Upgrades the first node in the cluster and returns a list of
         (is_upgraded, Session) tuples.  If `is_upgraded` is true, the
@@ -137,6 +137,16 @@ class UpgradeTester(Tester):
         # want these to pollute our results.
         if is_win() and self.cluster.version() <= '2.2':
             node1.mark_log_for_errors()
+
+        # In some cases we find the need to ignore specific error messages before upgrading.
+        # Normally when there are benign errors occuring in a prior version of Cassandra.
+        if ignored_log_patterns is not None:
+            log_errors = node1.grep_log_for_errors()
+            if set(log_errors).issubset(set(ignored_log_patterns)):
+                node1.mark_log_for_errors()
+            else:
+                failure_errors = [error for error in log_errors if error not in ignored_log_patterns]
+                self.fail("Unexpected error found in log before upgrade, error: \n{error_output}".format(error_output="\n".join(failure_errors)))
 
         debug('upgrading node1 to {}'.format(self.UPGRADE_PATH.upgrade_version))
         switch_jdks(self.UPGRADE_PATH.upgrade_meta.java_version)

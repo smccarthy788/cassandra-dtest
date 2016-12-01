@@ -5171,9 +5171,6 @@ class TestCQL(UpgradeTester):
                    jira_url='https://issues.apache.org/jira/browse/CASSANDRA-12866',
                    flaky=True)
     def bug_5732_test(self):
-        if self.cluster.version() < "2.2":
-            self.ignore_log_patterns = ["LEAK DETECTED: a reference .* to class .* was not released before the reference was garbage collected"]
-
         cursor = self.prepare(use_cache=True)
 
         cursor.execute("""
@@ -5221,7 +5218,8 @@ class TestCQL(UpgradeTester):
         self.cluster.start(wait_for_binary_proto=True)
         time.sleep(0.5)
 
-        for is_upgraded, cursor in self.do_upgrade(cursor):
+        ignore_log_patterns = ["LEAK DETECTED: a reference .* to class .* was not released before the reference was garbage collected"]
+        for is_upgraded, cursor in self.do_upgrade(cursor, ignored_log_patterns=ignore_log_patterns):
             debug("Querying {} node".format("upgraded" if is_upgraded else "old"))
             assert_all(cursor, "SELECT k FROM ks.test WHERE v = 0", [[0]])
 
